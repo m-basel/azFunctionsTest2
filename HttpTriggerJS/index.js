@@ -7,7 +7,7 @@ var https = require('https');
 const download = (context, pdfUrl) =>
     new Promise((res, rej) => {
         var filename = tmp.tmpNameSync({ postfix: '.pdf' });
-        context.log('local temp file: ', filename);
+        context.log('downloading to temp file: ', filename);
 
         var file = fs.createWriteStream(filename);
         var request = https.get(pdfUrl, function (response) {
@@ -18,7 +18,7 @@ const download = (context, pdfUrl) =>
         })
     });
 
-const savePage = (pngFile, data) =>
+const savePage = (context, pngFile, data) =>
     new Promise((res, rej) =>
         fs.writeFile(pngFile, data, function (err) {
             if (err)
@@ -27,20 +27,24 @@ const savePage = (pngFile, data) =>
                 res()
         }));
 
-const splitPdf = (pdfFile) => {
+const splitPdf = (context, pdfFile) => {
     var basePath = path.dirname(pdfFile);
     var baseName = path.basename(pdfFile, ".pdf");
 
     return new Promise((res, rej) => {
         pdf2png.convert(pdfFile, { quality: 300 }, function (resp) {
-            if (!resp.success)
-                rej("Error while converting pdf: " + resp.error);
-
+            context.log('pdf.convert');
+            if (!resp.success) {
+                var message = "Error while converting pdf: " + resp.error;
+                context.log(message);
+                rej(message);
+            }
+                
             res(resp.data.length);
             /*
             resp.data.forEach(async (data, index) => {
                 var pngFile = basePath + "\\" + baseName + "-" + index + ".png";
-                await savePage(pngFile, data);
+                await savePage(context, pngFile, data);
             });
             res();*/
         });
@@ -59,9 +63,12 @@ module.exports = async function (context, req) {
         }
         return;
     }
+    context.log('PDF is ', input);
 
     var file = await download(context, input);
-    var pages = await splitPdf(file);
+    context.log('File downloaded', file);
+    var pages = await splitPdf(context, file);
+    context.log('File splitted', pages);
     fs.unlinkSync(file);
 
     context.res = {
