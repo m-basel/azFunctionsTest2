@@ -3,6 +3,7 @@
   "dependencies": {
     "fs": "^0.0.1-security",
     "path": "^0.12.7",
-    "pdf2png-mp": "^0.5.4"
+    "pdf2png-mp": "^0.5.4",
+    "tmp": "0.0.33"
   }
 }
