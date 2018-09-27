@@ -6,7 +6,7 @@ var https = require('https');
 
 const download = (context, pdfUrl) =>
     new Promise((res, rej) => {
-        var filename = tmp.tmpNameSync({ prefix: '/func/', postfix: '.pdf' });
+        var filename = tmp.tmpNameSync({ postfix: '.pdf' });
         context.log('local temp file: ', filename);
 
         var file = fs.createWriteStream(filename);
